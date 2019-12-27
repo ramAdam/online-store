@@ -1,10 +1,9 @@
 package com.nano.store.config;
 
-import com.nano.store.security.*;
-import com.nano.store.security.jwt.*;
+import com.nano.store.security.AuthoritiesConstants;
+import com.nano.store.security.jwt.JWTConfigurer;
+import com.nano.store.security.jwt.TokenProvider;
 
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
