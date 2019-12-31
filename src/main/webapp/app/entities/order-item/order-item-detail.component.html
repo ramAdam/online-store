@@ -26,7 +26,7 @@
                 <dt><span jhiTranslate="storeApp.orderItem.order">Order</span></dt>
                 <dd>
                     <div *ngIf="orderItem.order">
-                        <a [routerLink]="['/product-order', orderItem.order?.id, 'view']">{{orderItem.order?.id}}</a>
+                        <a [routerLink]="['/product-order', orderItem.order?.id, 'view']">{{orderItem.order?.code}}</a>
                     </div>
                 </dd>
             </dl>
