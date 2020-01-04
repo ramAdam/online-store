@@ -1,16 +1,18 @@
 package com.nano.store.service;
 
+import java.util.Optional;
+
 import com.nano.store.domain.ProductOrder;
 import com.nano.store.repository.ProductOrderRepository;
+import com.nano.store.security.AuthoritiesConstants;
+import com.nano.store.security.SecurityUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 /**
  * Service Implementation for managing {@link ProductOrder}.
@@ -47,9 +49,17 @@ public class ProductOrderService {
     @Transactional(readOnly = true)
     public Page<ProductOrder> findAll(Pageable pageable) {
         log.debug("Request to get all ProductOrders");
-        return productOrderRepository.findAll(pageable);
-    }
+        Page<ProductOrder> orders = null;
 
+        if(SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)){
+            orders = productOrderRepository.findAll(pageable);
+        }else{
+            orders = productOrderRepository.findAllByCustomerUserLogin(
+                     SecurityUtils.getCurrentUserLogin().get(),pageable);
+        }
+
+        return orders;
+    }
 
     /**
      * Get one productOrder by id.

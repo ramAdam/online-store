@@ -1,29 +1,37 @@
 package com.nano.store.web.rest;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
+
+import javax.validation.Valid;
+
 import com.nano.store.domain.OrderItem;
 import com.nano.store.service.OrderItemService;
 import com.nano.store.web.rest.errors.BadRequestAlertException;
 
-import io.github.jhipster.web.util.HeaderUtil;
-import io.github.jhipster.web.util.PaginationUtil;
-import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.validation.Valid;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import java.util.List;
-import java.util.Optional;
+import io.github.jhipster.web.util.HeaderUtil;
+import io.github.jhipster.web.util.PaginationUtil;
+import io.github.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link com.nano.store.domain.OrderItem}.
@@ -53,6 +61,7 @@ public class OrderItemResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/order-items")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<OrderItem> createOrderItem(@Valid @RequestBody OrderItem orderItem) throws URISyntaxException {
         log.debug("REST request to save OrderItem : {}", orderItem);
         if (orderItem.getId() != null) {
@@ -74,6 +83,7 @@ public class OrderItemResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/order-items")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<OrderItem> updateOrderItem(@Valid @RequestBody OrderItem orderItem) throws URISyntaxException {
         log.debug("REST request to update OrderItem : {}", orderItem);
         if (orderItem.getId() == null) {
@@ -121,6 +131,7 @@ public class OrderItemResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/order-items/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteOrderItem(@PathVariable Long id) {
         log.debug("REST request to delete OrderItem : {}", id);
         orderItemService.delete(id);

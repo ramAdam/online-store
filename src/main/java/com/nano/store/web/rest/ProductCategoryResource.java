@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -47,6 +48,7 @@ public class ProductCategoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/product-categories")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ProductCategory> createProductCategory(@Valid @RequestBody ProductCategory productCategory) throws URISyntaxException {
         log.debug("REST request to save ProductCategory : {}", productCategory);
         if (productCategory.getId() != null) {
@@ -68,6 +70,7 @@ public class ProductCategoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/product-categories")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ProductCategory> updateProductCategory(@Valid @RequestBody ProductCategory productCategory) throws URISyntaxException {
         log.debug("REST request to update ProductCategory : {}", productCategory);
         if (productCategory.getId() == null) {
@@ -111,6 +114,7 @@ public class ProductCategoryResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/product-categories/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteProductCategory(@PathVariable Long id) {
         log.debug("REST request to delete ProductCategory : {}", id);
         productCategoryService.delete(id);

@@ -48,6 +48,8 @@ public class InvoiceService {
     public Page<Invoice> findAll(Pageable pageable) {
         log.debug("Request to get all Invoices");
         return invoiceRepository.findAll(pageable);
+        
+          
     }
 
 
