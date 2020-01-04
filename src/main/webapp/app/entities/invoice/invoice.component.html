@@ -1,7 +1,8 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="storeApp.invoice.home.title">Invoices</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-invoice" [routerLink]="['/invoice/new']">
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-invoice" 
+            [routerLink]="['/invoice/new']" *jhiHasAnyAuthority="'ROLE_ADMIN'">
             <fa-icon [icon]="'plus'"></fa-icon>
             <span  jhiTranslate="storeApp.invoice.home.createLabel">
             Create a new Invoice
@@ -25,7 +26,8 @@
             <th scope="col"  jhiSortBy="paymentMethod"><span jhiTranslate="storeApp.invoice.paymentMethod">Payment Method</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"  jhiSortBy="paymentDate"><span jhiTranslate="storeApp.invoice.paymentDate">Payment Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"  jhiSortBy="paymentAmount"><span jhiTranslate="storeApp.invoice.paymentAmount">Payment Amount</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th scope="col"  jhiSortBy="order.id"><span jhiTranslate="storeApp.invoice.order">Order</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th scope="col"  jhiSortBy="code"><span jhiTranslate="storeApp.invoice.code">Code</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th scope="col"  jhiSortBy="order.code"><span jhiTranslate="storeApp.invoice.order">Order</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"></th>
             </tr>
             </thead>
@@ -38,9 +40,10 @@
                 <td jhiTranslate="{{'storeApp.PaymentMethod.' + invoice.paymentMethod}}">{{invoice.paymentMethod}}</td>
                 <td>{{invoice.paymentDate | date:'medium'}}</td>
                 <td>{{invoice.paymentAmount}}</td>
+                <td>{{invoice.code}}</td>
                 <td>
                     <div *ngIf="invoice.order">
-                        <a [routerLink]="['/product-order', invoice.order?.id, 'view' ]" >{{invoice.order?.id}}</a>
+                        <a [routerLink]="['/product-order', invoice.order?.id, 'view' ]" >{{invoice.order?.code}}</a>
                     </div>
                 </td>
                 <td class="text-right">
@@ -53,12 +56,12 @@
                         </button>
                         <button type="submit"
                                 [routerLink]="['/invoice', invoice.id, 'edit']"
-                                class="btn btn-primary btn-sm">
+                                class="btn btn-primary btn-sm" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                             <fa-icon [icon]="'pencil-alt'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                         </button>
                         <button type="submit" (click)="delete(invoice)"
-                                class="btn btn-danger btn-sm">
+                                class="btn btn-danger btn-sm" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                             <fa-icon [icon]="'times'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                         </button>

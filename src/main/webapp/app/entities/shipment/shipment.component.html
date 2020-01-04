@@ -1,7 +1,8 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="storeApp.shipment.home.title">Shipments</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-shipment" [routerLink]="['/shipment/new']">
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-shipment" 
+            [routerLink]="['/shipment/new']" *jhiHasAnyAuthority="'ROLE_ADMIN'">
             <fa-icon [icon]="'plus'"></fa-icon>
             <span  jhiTranslate="storeApp.shipment.home.createLabel">
             Create a new Shipment
@@ -22,7 +23,7 @@
             <th scope="col"  jhiSortBy="trackingCode"><span jhiTranslate="storeApp.shipment.trackingCode">Tracking Code</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"  jhiSortBy="date"><span jhiTranslate="storeApp.shipment.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"  jhiSortBy="details"><span jhiTranslate="storeApp.shipment.details">Details</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th scope="col"  jhiSortBy="invoice.id"><span jhiTranslate="storeApp.shipment.invoice">Invoice</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th scope="col"  jhiSortBy="invoice.code"><span jhiTranslate="storeApp.shipment.invoice">Invoice</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"></th>
             </tr>
             </thead>
@@ -34,7 +35,7 @@
                 <td>{{shipment.details}}</td>
                 <td>
                     <div *ngIf="shipment.invoice">
-                        <a [routerLink]="['/invoice', shipment.invoice?.id, 'view' ]" >{{shipment.invoice?.id}}</a>
+                        <a [routerLink]="['/invoice', shipment.invoice?.id, 'view' ]" >{{shipment.invoice?.code}}</a>
                     </div>
                 </td>
                 <td class="text-right">
@@ -47,12 +48,12 @@
                         </button>
                         <button type="submit"
                                 [routerLink]="['/shipment', shipment.id, 'edit']"
-                                class="btn btn-primary btn-sm">
+                                class="btn btn-primary btn-sm" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                             <fa-icon [icon]="'pencil-alt'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                         </button>
                         <button type="submit" (click)="delete(shipment)"
-                                class="btn btn-danger btn-sm">
+                                class="btn btn-danger btn-sm" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                             <fa-icon [icon]="'times'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                         </button>

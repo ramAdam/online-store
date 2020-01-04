@@ -1,10 +1,12 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="storeApp.orderItem.home.title">Order Items</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-order-item" [routerLink]="['/order-item/new']">
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-order-item" 
+            [routerLink]="['/order-item/new']"
+            *jhiHasAnyAuthority="'ROLE_ADMIN'">
             <fa-icon [icon]="'plus'"></fa-icon>
             <span  jhiTranslate="storeApp.orderItem.home.createLabel">
-            Create a new Order Item
+                Create a new Order Item
             </span>
         </button>
     </h2>
@@ -23,7 +25,7 @@
             <th scope="col"  jhiSortBy="totalPrice"><span jhiTranslate="storeApp.orderItem.totalPrice">Total Price</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"  jhiSortBy="status"><span jhiTranslate="storeApp.orderItem.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"  jhiSortBy="product.id"><span jhiTranslate="storeApp.orderItem.product">Product</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th scope="col"  jhiSortBy="order.id"><span jhiTranslate="storeApp.orderItem.order">Order</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th scope="col"  jhiSortBy="order.code"><span jhiTranslate="storeApp.orderItem.order">Order</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th scope="col"></th>
             </tr>
             </thead>
@@ -40,7 +42,7 @@
                 </td>
                 <td>
                     <div *ngIf="orderItem.order">
-                        <a [routerLink]="['/product-order', orderItem.order?.id, 'view' ]" >{{orderItem.order?.id}}</a>
+                        <a [routerLink]="['/product-order', orderItem.order?.id, 'view' ]" >{{orderItem.order?.code}}</a>
                     </div>
                 </td>
                 <td class="text-right">
@@ -53,12 +55,12 @@
                         </button>
                         <button type="submit"
                                 [routerLink]="['/order-item', orderItem.id, 'edit']"
-                                class="btn btn-primary btn-sm">
+                                class="btn btn-primary btn-sm" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                             <fa-icon [icon]="'pencil-alt'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                         </button>
                         <button type="submit" (click)="delete(orderItem)"
-                                class="btn btn-danger btn-sm">
+                                class="btn btn-danger btn-sm" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                             <fa-icon [icon]="'times'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                         </button>

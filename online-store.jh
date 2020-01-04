@@ -75,15 +75,15 @@ entity Shipment {
 }
 
 relationship OneToOne {
-    Customer{user} to User
+    Customer{user(login) required} to User
 }
 
 relationship OneToMany {
-   Customer{order} to ProductOrder{customer},
-   ProductOrder{orderItem} to OrderItem{order},
-   ProductOrder{invoice} to Invoice{order},
-   Invoice{shipment} to Shipment{invoice},
-   ProductCategory{product} to Product{productCategory}
+   Customer{order} to ProductOrder{customer(email) required},
+   ProductOrder{orderItem} to OrderItem{order(code) required},
+   ProductOrder{invoice} to Invoice{order(code) required},
+   Invoice{shipment} to Shipment{invoice(code) required},
+   ProductCategory{product} to Product{productCategory(name)}
 }
 
 

@@ -20,7 +20,7 @@
                 <dt><span jhiTranslate="storeApp.productOrder.customer">Customer</span></dt>
                 <dd>
                     <div *ngIf="productOrder.customer">
-                        <a [routerLink]="['/customer', productOrder.customer?.id, 'view']">{{productOrder.customer?.id}}</a>
+                        <a [routerLink]="['/customer', productOrder.customer?.id, 'view']">{{productOrder.customer?.email}}</a>
                     </div>
                 </dd>
             </dl>
@@ -33,7 +33,7 @@
 
             <button type="button"
                     [routerLink]="['/product-order', productOrder.id, 'edit']"
-                    class="btn btn-primary">
+                    class="btn btn-primary" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                 <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
             </button>
         </div>
