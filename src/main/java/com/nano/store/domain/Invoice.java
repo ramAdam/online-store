@@ -61,7 +61,7 @@ public class Invoice implements Serializable {
 
     @OneToMany(mappedBy = "invoice")
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private Set<Shipment> shipments = new HashSet<>();
+    private Set<Shipment> shipments = new HashSet<Shipment>();
 
     @ManyToOne
     @JsonIgnoreProperties("invoices")

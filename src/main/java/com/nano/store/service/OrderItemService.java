@@ -2,6 +2,9 @@ package com.nano.store.service;
 
 import com.nano.store.domain.OrderItem;
 import com.nano.store.repository.OrderItemRepository;
+import com.nano.store.security.AuthoritiesConstants;
+import com.nano.store.security.SecurityUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +50,13 @@ public class OrderItemService {
     @Transactional(readOnly = true)
     public Page<OrderItem> findAll(Pageable pageable) {
         log.debug("Request to get all OrderItems");
-        return orderItemRepository.findAll(pageable);
+        if(SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)){
+            return orderItemRepository.findAll(pageable);
+        }else{
+            return orderItemRepository.findAllByOrderCustomerUserLogin(
+                SecurityUtils.getCurrentUserLogin().get(), pageable
+            );
+        }
     }
 
 
@@ -60,7 +69,13 @@ public class OrderItemService {
     @Transactional(readOnly = true)
     public Optional<OrderItem> findOne(Long id) {
         log.debug("Request to get OrderItem : {}", id);
-        return orderItemRepository.findById(id);
+        if(SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)){
+            return orderItemRepository.findById(id);
+        }else{
+            return orderItemRepository.findByIdAndOrderCustomerUserLogin(
+                id, SecurityUtils.getCurrentUserLogin().get()
+            );
+        }
     }
 
     /**
