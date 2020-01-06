@@ -17,6 +17,7 @@ import { ProductDeleteDialogComponent } from './product-delete-dialog.component'
 })
 export class ProductComponent implements OnInit, OnDestroy {
   products: IProduct[];
+  filter: String;
   error: any;
   success: any;
   eventSubscriber: Subscription;

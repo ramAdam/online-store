@@ -34,6 +34,9 @@
             <column name="payment_amount" type="decimal(21,2)">
                 <constraints nullable="false" />
             </column>
+            <column name="code" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
             <column name="order_id" type="bigint">
                 <constraints nullable="true" />
             </column>
@@ -68,6 +71,7 @@
             <column name="payment_method" type="string"/>
             <column name="payment_date" type="datetime"/>
             <column name="payment_amount" type="numeric"/>
+            <column name="code" type="string"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here, do not remove-->
         </loadData>
     </changeSet>

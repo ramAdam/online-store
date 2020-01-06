@@ -89,12 +89,23 @@
                         </small>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="storeApp.invoice.code" for="field_code">Code</label>
+                    <input type="text" class="form-control" name="code" id="field_code"
+                           formControlName="code"/>
+                    <div *ngIf="editForm.get('code').invalid && (editForm.get('code').dirty || editForm.get('code').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('code').errors.required" jhiTranslate="entity.validation.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
 
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="storeApp.invoice.order" for="field_order">Order</label>
                     <select class="form-control" id="field_order" name="order" formControlName="order">
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="productOrderOption.id === editForm.get('order').value?.id ? editForm.get('order').value : productOrderOption" *ngFor="let productOrderOption of productorders; trackBy: trackProductOrderById">{{productOrderOption.id}}</option>
+                        <option [ngValue]="productOrderOption.id === editForm.get('order').value?.id ? editForm.get('order').value : productOrderOption" *ngFor="let productOrderOption of productorders; trackBy: trackProductOrderById">{{productOrderOption.code}}</option>
                     </select>
                 </div>
             </div>
