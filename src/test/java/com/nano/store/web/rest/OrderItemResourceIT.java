@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ import com.nano.store.domain.enumeration.OrderItemStatus;
  * Integration tests for the {@link OrderItemResource} REST controller.
  */
 @SpringBootTest(classes = StoreApp.class)
+@WithMockUser(username = "admin", authorities = {"ROLE_ADMIN"}, password = "admin")
 public class OrderItemResourceIT {
 
     private static final Integer DEFAULT_QUANTITY = 0;

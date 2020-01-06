@@ -30,3 +30,4 @@
     <include file="config/liquibase/changelog/20191227011759_added_entity_constraints_Shipment.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
 </databaseChangeLog>
+    
