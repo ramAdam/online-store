@@ -31,7 +31,7 @@ describe('account', () => {
     await browser.get('/');
     signInPage = await navBarPage.getSignInPage();
 
-    const expect1 = 'Login';
+    const expect1 = 'Username';
     const value1 = await element(by.className('username-label')).getText();
     expect(value1).to.eq(expect1);
     await signInPage.autoSignInUsing('admin', 'admin');
