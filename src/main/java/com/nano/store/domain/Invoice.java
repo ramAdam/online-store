@@ -1,33 +1,32 @@
 package com.nano.store.domain;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import javax.persistence.*;
-import javax.validation.constraints.*;
-
+import com.nano.store.domain.enumeration.InvoiceStatus;
+import com.nano.store.domain.enumeration.PaymentMethod;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.nano.store.domain.enumeration.InvoiceStatus;
-
-import com.nano.store.domain.enumeration.PaymentMethod;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A Invoice.
  */
 @Entity
 @Table(name = "invoice")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Invoice implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @NotNull
@@ -60,16 +59,23 @@ public class Invoice implements Serializable {
     private String code;
 
     @OneToMany(mappedBy = "invoice")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "invoice" }, allowSetters = true)
     private Set<Shipment> shipments = new HashSet<>();
 
     @ManyToOne
-    @JsonIgnoreProperties("invoices")
+    @JsonIgnoreProperties(value = { "orderItems", "invoices", "customer" }, allowSetters = true)
     private ProductOrder order;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
     public Long getId() {
-        return id;
+        return this.id;
+    }
+
+    public Invoice id(Long id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(Long id) {
@@ -77,11 +83,11 @@ public class Invoice implements Serializable {
     }
 
     public Instant getDate() {
-        return date;
+        return this.date;
     }
 
     public Invoice date(Instant date) {
-        this.date = date;
+        this.setDate(date);
         return this;
     }
 
@@ -90,11 +96,11 @@ public class Invoice implements Serializable {
     }
 
     public String getDetails() {
-        return details;
+        return this.details;
     }
 
     public Invoice details(String details) {
-        this.details = details;
+        this.setDetails(details);
         return this;
     }
 
@@ -103,11 +109,11 @@ public class Invoice implements Serializable {
     }
 
     public InvoiceStatus getStatus() {
-        return status;
+        return this.status;
     }
 
     public Invoice status(InvoiceStatus status) {
-        this.status = status;
+        this.setStatus(status);
         return this;
     }
 
@@ -116,11 +122,11 @@ public class Invoice implements Serializable {
     }
 
     public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
+        return this.paymentMethod;
     }
 
     public Invoice paymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
+        this.setPaymentMethod(paymentMethod);
         return this;
     }
 
@@ -129,11 +135,11 @@ public class Invoice implements Serializable {
     }
 
     public Instant getPaymentDate() {
-        return paymentDate;
+        return this.paymentDate;
     }
 
     public Invoice paymentDate(Instant paymentDate) {
-        this.paymentDate = paymentDate;
+        this.setPaymentDate(paymentDate);
         return this;
     }
 
@@ -142,11 +148,11 @@ public class Invoice implements Serializable {
     }
 
     public BigDecimal getPaymentAmount() {
-        return paymentAmount;
+        return this.paymentAmount;
     }
 
     public Invoice paymentAmount(BigDecimal paymentAmount) {
-        this.paymentAmount = paymentAmount;
+        this.setPaymentAmount(paymentAmount);
         return this;
     }
 
@@ -155,11 +161,11 @@ public class Invoice implements Serializable {
     }
 
     public String getCode() {
-        return code;
+        return this.code;
     }
 
     public Invoice code(String code) {
-        this.code = code;
+        this.setCode(code);
         return this;
     }
 
@@ -168,11 +174,21 @@ public class Invoice implements Serializable {
     }
 
     public Set<Shipment> getShipments() {
-        return shipments;
+        return this.shipments;
+    }
+
+    public void setShipments(Set<Shipment> shipments) {
+        if (this.shipments != null) {
+            this.shipments.forEach(i -> i.setInvoice(null));
+        }
+        if (shipments != null) {
+            shipments.forEach(i -> i.setInvoice(this));
+        }
+        this.shipments = shipments;
     }
 
     public Invoice shipments(Set<Shipment> shipments) {
-        this.shipments = shipments;
+        this.setShipments(shipments);
         return this;
     }
 
@@ -188,23 +204,20 @@ public class Invoice implements Serializable {
         return this;
     }
 
-    public void setShipments(Set<Shipment> shipments) {
-        this.shipments = shipments;
-    }
-
     public ProductOrder getOrder() {
-        return order;
-    }
-
-    public Invoice order(ProductOrder productOrder) {
-        this.order = productOrder;
-        return this;
+        return this.order;
     }
 
     public void setOrder(ProductOrder productOrder) {
         this.order = productOrder;
     }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
+
+    public Invoice order(ProductOrder productOrder) {
+        this.setOrder(productOrder);
+        return this;
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
@@ -219,9 +232,11 @@ public class Invoice implements Serializable {
 
     @Override
     public int hashCode() {
-        return 31;
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "Invoice{" +

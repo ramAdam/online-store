@@ -1,13 +1,14 @@
 package com.nano.store.domain;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
-import com.nano.store.web.rest.TestUtil;
 
-public class InvoiceTest {
+import com.nano.store.web.rest.TestUtil;
+import org.junit.jupiter.api.Test;
+
+class InvoiceTest {
 
     @Test
-    public void equalsVerifier() throws Exception {
+    void equalsVerifier() throws Exception {
         TestUtil.equalsVerifier(Invoice.class);
         Invoice invoice1 = new Invoice();
         invoice1.setId(1L);

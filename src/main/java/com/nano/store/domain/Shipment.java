@@ -1,26 +1,27 @@
 package com.nano.store.domain;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import javax.persistence.*;
-import javax.validation.constraints.*;
-
 import java.io.Serializable;
 import java.time.Instant;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A Shipment.
  */
 @Entity
 @Table(name = "shipment")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Shipment implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "tracking_code")
@@ -34,12 +35,18 @@ public class Shipment implements Serializable {
     private String details;
 
     @ManyToOne
-    @JsonIgnoreProperties("shipments")
+    @JsonIgnoreProperties(value = { "shipments", "order" }, allowSetters = true)
     private Invoice invoice;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
     public Long getId() {
-        return id;
+        return this.id;
+    }
+
+    public Shipment id(Long id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(Long id) {
@@ -47,11 +54,11 @@ public class Shipment implements Serializable {
     }
 
     public String getTrackingCode() {
-        return trackingCode;
+        return this.trackingCode;
     }
 
     public Shipment trackingCode(String trackingCode) {
-        this.trackingCode = trackingCode;
+        this.setTrackingCode(trackingCode);
         return this;
     }
 
@@ -60,11 +67,11 @@ public class Shipment implements Serializable {
     }
 
     public Instant getDate() {
-        return date;
+        return this.date;
     }
 
     public Shipment date(Instant date) {
-        this.date = date;
+        this.setDate(date);
         return this;
     }
 
@@ -73,11 +80,11 @@ public class Shipment implements Serializable {
     }
 
     public String getDetails() {
-        return details;
+        return this.details;
     }
 
     public Shipment details(String details) {
-        this.details = details;
+        this.setDetails(details);
         return this;
     }
 
@@ -86,18 +93,19 @@ public class Shipment implements Serializable {
     }
 
     public Invoice getInvoice() {
-        return invoice;
-    }
-
-    public Shipment invoice(Invoice invoice) {
-        this.invoice = invoice;
-        return this;
+        return this.invoice;
     }
 
     public void setInvoice(Invoice invoice) {
         this.invoice = invoice;
     }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
+
+    public Shipment invoice(Invoice invoice) {
+        this.setInvoice(invoice);
+        return this;
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
@@ -112,9 +120,11 @@ public class Shipment implements Serializable {
 
     @Override
     public int hashCode() {
-        return 31;
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "Shipment{" +

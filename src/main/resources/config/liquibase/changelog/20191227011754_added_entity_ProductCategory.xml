@@ -3,17 +3,15 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-
-        <property name="autoIncrement" value="true"/>
 
     <!--
         Added the entity ProductCategory.
     -->
     <changeSet id="20191227011754-1" author="jhipster">
         <createTable tableName="product_category">
-            <column name="id" type="bigint" autoIncrement="${autoIncrement}">
+            <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="varchar(255)">
@@ -22,14 +20,11 @@
             <column name="description" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
-            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here, do not remove-->
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
     </changeSet>
 
-    <changeSet id="20191227011754-1-relations" author="jhipster">
-
-    </changeSet>
-    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here, do not remove-->
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
 
     <!--
         Load sample data generated with Faker.js
@@ -43,12 +38,12 @@
         <loadData
                   file="config/liquibase/fake-data/product_category.csv"
                   separator=";"
-                  tableName="product_category">
+                  tableName="product_category"
+                  usePreparedStatements="true">
             <column name="id" type="numeric"/>
             <column name="name" type="string"/>
             <column name="description" type="string"/>
-            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here, do not remove-->
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>
-
 </databaseChangeLog>

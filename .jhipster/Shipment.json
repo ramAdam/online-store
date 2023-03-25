@@ -1,39 +1,37 @@
 {
-    "name": "Shipment",
-    "fields": [
-        {
-            "fieldName": "trackingCode",
-            "fieldType": "String"
-        },
-        {
-            "fieldName": "date",
-            "fieldType": "Instant",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "details",
-            "fieldType": "String"
-        }
-    ],
-    "relationships": [
-        {
-            "relationshipType": "many-to-one",
-            "otherEntityName": "invoice",
-            "otherEntityRelationshipName": "shipment",
-            "relationshipName": "invoice",
-            "otherEntityField": "code"
-        }
-    ],
-    "changelogDate": "20191227011759",
-    "entityTableName": "shipment",
-    "dto": "no",
-    "pagination": "pagination",
-    "service": "serviceClass",
-    "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "readOnly": false,
-    "clientRootFolder": "",
-    "applications": "*"
+  "applications": "*",
+  "changelogDate": "20191227011759",
+  "clientRootFolder": "",
+  "dto": "no",
+  "entityTableName": "shipment",
+  "fields": [
+    {
+      "fieldName": "trackingCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "date",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "details",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Shipment",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "code",
+      "otherEntityName": "invoice",
+      "otherEntityRelationshipName": "shipment",
+      "relationshipName": "invoice",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceClass"
 }

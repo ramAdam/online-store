@@ -1,54 +1,36 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { JhiEventManager } from 'ng-jhipster';
+import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
-import { LoginModalService } from 'app/core/login/login-modal.service';
 import { AccountService } from 'app/core/auth/account.service';
-import { Account } from 'app/core/user/account.model';
+import { Account } from 'app/core/auth/account.model';
 
 @Component({
   selector: 'jhi-home',
   templateUrl: './home.component.html',
-  styleUrls: ['home.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  account: Account;
-  authSubscription: Subscription;
-  modalRef: NgbModalRef;
+  account: Account | null = null;
 
-  constructor(
-    private accountService: AccountService,
-    private loginModalService: LoginModalService,
-    private eventManager: JhiEventManager
-  ) {}
+  private readonly destroy$ = new Subject<void>();
 
-  ngOnInit() {
-    this.accountService.identity().subscribe((account: Account) => {
-      this.account = account;
-    });
-    this.registerAuthenticationSuccess();
+  constructor(private accountService: AccountService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.accountService
+      .getAuthenticationState()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(account => (this.account = account));
   }
 
-  registerAuthenticationSuccess() {
-    this.authSubscription = this.eventManager.subscribe('authenticationSuccess', () => {
-      this.accountService.identity().subscribe(account => {
-        this.account = account;
-      });
-    });
+  login(): void {
+    this.router.navigate(['/login']);
   }
 
-  isAuthenticated() {
-    return this.accountService.isAuthenticated();
-  }
-
-  login() {
-    this.modalRef = this.loginModalService.open();
-  }
-
-  ngOnDestroy() {
-    if (this.authSubscription) {
-      this.eventManager.destroy(this.authSubscription);
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

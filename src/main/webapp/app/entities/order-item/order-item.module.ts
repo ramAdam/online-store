@@ -1,16 +1,13 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-
-import { StoreSharedModule } from 'app/shared/shared.module';
-import { OrderItemComponent } from './order-item.component';
-import { OrderItemDetailComponent } from './order-item-detail.component';
-import { OrderItemUpdateComponent } from './order-item-update.component';
-import { OrderItemDeleteDialogComponent } from './order-item-delete-dialog.component';
-import { orderItemRoute } from './order-item.route';
+import { SharedModule } from 'app/shared/shared.module';
+import { OrderItemComponent } from './list/order-item.component';
+import { OrderItemDetailComponent } from './detail/order-item-detail.component';
+import { OrderItemUpdateComponent } from './update/order-item-update.component';
+import { OrderItemDeleteDialogComponent } from './delete/order-item-delete-dialog.component';
+import { OrderItemRoutingModule } from './route/order-item-routing.module';
 
 @NgModule({
-  imports: [StoreSharedModule, RouterModule.forChild(orderItemRoute)],
+  imports: [SharedModule, OrderItemRoutingModule],
   declarations: [OrderItemComponent, OrderItemDetailComponent, OrderItemUpdateComponent, OrderItemDeleteDialogComponent],
-  entryComponents: [OrderItemDeleteDialogComponent]
 })
-export class StoreOrderItemModule {}
+export class OrderItemModule {}

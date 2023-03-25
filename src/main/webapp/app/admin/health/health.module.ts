@@ -1,15 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { StoreSharedModule } from 'app/shared/shared.module';
+import { SharedModule } from 'app/shared/shared.module';
 
-import { JhiHealthCheckComponent } from './health.component';
-import { JhiHealthModalComponent } from './health-modal.component';
-
+import { HealthComponent } from './health.component';
+import { HealthModalComponent } from './modal/health-modal.component';
 import { healthRoute } from './health.route';
 
 @NgModule({
-  imports: [StoreSharedModule, RouterModule.forChild([healthRoute])],
-  declarations: [JhiHealthCheckComponent, JhiHealthModalComponent],
-  entryComponents: [JhiHealthModalComponent]
+  imports: [SharedModule, RouterModule.forChild([healthRoute])],
+  declarations: [HealthComponent, HealthModalComponent],
 })
 export class HealthModule {}

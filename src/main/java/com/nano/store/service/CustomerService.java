@@ -2,15 +2,13 @@ package com.nano.store.service;
 
 import com.nano.store.domain.Customer;
 import com.nano.store.repository.CustomerRepository;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 /**
  * Service Implementation for managing {@link Customer}.
@@ -39,6 +37,62 @@ public class CustomerService {
     }
 
     /**
+     * Update a customer.
+     *
+     * @param customer the entity to save.
+     * @return the persisted entity.
+     */
+    public Customer update(Customer customer) {
+        log.debug("Request to update Customer : {}", customer);
+        return customerRepository.save(customer);
+    }
+
+    /**
+     * Partially update a customer.
+     *
+     * @param customer the entity to update partially.
+     * @return the persisted entity.
+     */
+    public Optional<Customer> partialUpdate(Customer customer) {
+        log.debug("Request to partially update Customer : {}", customer);
+
+        return customerRepository
+            .findById(customer.getId())
+            .map(existingCustomer -> {
+                if (customer.getFirstName() != null) {
+                    existingCustomer.setFirstName(customer.getFirstName());
+                }
+                if (customer.getLastName() != null) {
+                    existingCustomer.setLastName(customer.getLastName());
+                }
+                if (customer.getGender() != null) {
+                    existingCustomer.setGender(customer.getGender());
+                }
+                if (customer.getEmail() != null) {
+                    existingCustomer.setEmail(customer.getEmail());
+                }
+                if (customer.getPhone() != null) {
+                    existingCustomer.setPhone(customer.getPhone());
+                }
+                if (customer.getAddressLine1() != null) {
+                    existingCustomer.setAddressLine1(customer.getAddressLine1());
+                }
+                if (customer.getAddressLine2() != null) {
+                    existingCustomer.setAddressLine2(customer.getAddressLine2());
+                }
+                if (customer.getCity() != null) {
+                    existingCustomer.setCity(customer.getCity());
+                }
+                if (customer.getCountry() != null) {
+                    existingCustomer.setCountry(customer.getCountry());
+                }
+
+                return existingCustomer;
+            })
+            .map(customerRepository::save);
+    }
+
+    /**
      * Get all the customers.
      *
      * @param pageable the pagination information.
@@ -49,7 +103,6 @@ public class CustomerService {
         log.debug("Request to get all Customers");
         return customerRepository.findAll(pageable);
     }
-
 
     /**
      * Get one customer by id.

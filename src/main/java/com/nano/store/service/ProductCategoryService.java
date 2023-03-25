@@ -2,14 +2,12 @@ package com.nano.store.service;
 
 import com.nano.store.domain.ProductCategory;
 import com.nano.store.repository.ProductCategoryRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service Implementation for managing {@link ProductCategory}.
@@ -38,6 +36,41 @@ public class ProductCategoryService {
     }
 
     /**
+     * Update a productCategory.
+     *
+     * @param productCategory the entity to save.
+     * @return the persisted entity.
+     */
+    public ProductCategory update(ProductCategory productCategory) {
+        log.debug("Request to update ProductCategory : {}", productCategory);
+        return productCategoryRepository.save(productCategory);
+    }
+
+    /**
+     * Partially update a productCategory.
+     *
+     * @param productCategory the entity to update partially.
+     * @return the persisted entity.
+     */
+    public Optional<ProductCategory> partialUpdate(ProductCategory productCategory) {
+        log.debug("Request to partially update ProductCategory : {}", productCategory);
+
+        return productCategoryRepository
+            .findById(productCategory.getId())
+            .map(existingProductCategory -> {
+                if (productCategory.getName() != null) {
+                    existingProductCategory.setName(productCategory.getName());
+                }
+                if (productCategory.getDescription() != null) {
+                    existingProductCategory.setDescription(productCategory.getDescription());
+                }
+
+                return existingProductCategory;
+            })
+            .map(productCategoryRepository::save);
+    }
+
+    /**
      * Get all the productCategories.
      *
      * @return the list of entities.
@@ -47,7 +80,6 @@ public class ProductCategoryService {
         log.debug("Request to get all ProductCategories");
         return productCategoryRepository.findAll();
     }
-
 
     /**
      * Get one productCategory by id.

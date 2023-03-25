@@ -1,28 +1,29 @@
 package com.nano.store.domain;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
-import javax.validation.constraints.*;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.nano.store.domain.enumeration.Gender;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.nano.store.domain.enumeration.Gender;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A Customer.
  */
 @Entity
 @Table(name = "customer")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Customer implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @NotNull
@@ -67,12 +68,19 @@ public class Customer implements Serializable {
     private User user;
 
     @OneToMany(mappedBy = "customer")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "orderItems", "invoices", "customer" }, allowSetters = true)
     private Set<ProductOrder> orders = new HashSet<>();
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
     public Long getId() {
-        return id;
+        return this.id;
+    }
+
+    public Customer id(Long id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(Long id) {
@@ -80,11 +88,11 @@ public class Customer implements Serializable {
     }
 
     public String getFirstName() {
-        return firstName;
+        return this.firstName;
     }
 
     public Customer firstName(String firstName) {
-        this.firstName = firstName;
+        this.setFirstName(firstName);
         return this;
     }
 
@@ -93,11 +101,11 @@ public class Customer implements Serializable {
     }
 
     public String getLastName() {
-        return lastName;
+        return this.lastName;
     }
 
     public Customer lastName(String lastName) {
-        this.lastName = lastName;
+        this.setLastName(lastName);
         return this;
     }
 
@@ -106,11 +114,11 @@ public class Customer implements Serializable {
     }
 
     public Gender getGender() {
-        return gender;
+        return this.gender;
     }
 
     public Customer gender(Gender gender) {
-        this.gender = gender;
+        this.setGender(gender);
         return this;
     }
 
@@ -119,11 +127,11 @@ public class Customer implements Serializable {
     }
 
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     public Customer email(String email) {
-        this.email = email;
+        this.setEmail(email);
         return this;
     }
 
@@ -132,11 +140,11 @@ public class Customer implements Serializable {
     }
 
     public String getPhone() {
-        return phone;
+        return this.phone;
     }
 
     public Customer phone(String phone) {
-        this.phone = phone;
+        this.setPhone(phone);
         return this;
     }
 
@@ -145,11 +153,11 @@ public class Customer implements Serializable {
     }
 
     public String getAddressLine1() {
-        return addressLine1;
+        return this.addressLine1;
     }
 
     public Customer addressLine1(String addressLine1) {
-        this.addressLine1 = addressLine1;
+        this.setAddressLine1(addressLine1);
         return this;
     }
 
@@ -158,11 +166,11 @@ public class Customer implements Serializable {
     }
 
     public String getAddressLine2() {
-        return addressLine2;
+        return this.addressLine2;
     }
 
     public Customer addressLine2(String addressLine2) {
-        this.addressLine2 = addressLine2;
+        this.setAddressLine2(addressLine2);
         return this;
     }
 
@@ -171,11 +179,11 @@ public class Customer implements Serializable {
     }
 
     public String getCity() {
-        return city;
+        return this.city;
     }
 
     public Customer city(String city) {
-        this.city = city;
+        this.setCity(city);
         return this;
     }
 
@@ -184,11 +192,11 @@ public class Customer implements Serializable {
     }
 
     public String getCountry() {
-        return country;
+        return this.country;
     }
 
     public Customer country(String country) {
-        this.country = country;
+        this.setCountry(country);
         return this;
     }
 
@@ -197,24 +205,34 @@ public class Customer implements Serializable {
     }
 
     public User getUser() {
-        return user;
-    }
-
-    public Customer user(User user) {
-        this.user = user;
-        return this;
+        return this.user;
     }
 
     public void setUser(User user) {
         this.user = user;
     }
 
+    public Customer user(User user) {
+        this.setUser(user);
+        return this;
+    }
+
     public Set<ProductOrder> getOrders() {
-        return orders;
+        return this.orders;
+    }
+
+    public void setOrders(Set<ProductOrder> productOrders) {
+        if (this.orders != null) {
+            this.orders.forEach(i -> i.setCustomer(null));
+        }
+        if (productOrders != null) {
+            productOrders.forEach(i -> i.setCustomer(this));
+        }
+        this.orders = productOrders;
     }
 
     public Customer orders(Set<ProductOrder> productOrders) {
-        this.orders = productOrders;
+        this.setOrders(productOrders);
         return this;
     }
 
@@ -230,10 +248,7 @@ public class Customer implements Serializable {
         return this;
     }
 
-    public void setOrders(Set<ProductOrder> productOrders) {
-        this.orders = productOrders;
-    }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
@@ -248,9 +263,11 @@ public class Customer implements Serializable {
 
     @Override
     public int hashCode() {
-        return 31;
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "Customer{" +

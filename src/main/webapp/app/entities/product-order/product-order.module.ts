@@ -1,16 +1,13 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-
-import { StoreSharedModule } from 'app/shared/shared.module';
-import { ProductOrderComponent } from './product-order.component';
-import { ProductOrderDetailComponent } from './product-order-detail.component';
-import { ProductOrderUpdateComponent } from './product-order-update.component';
-import { ProductOrderDeleteDialogComponent } from './product-order-delete-dialog.component';
-import { productOrderRoute } from './product-order.route';
+import { SharedModule } from 'app/shared/shared.module';
+import { ProductOrderComponent } from './list/product-order.component';
+import { ProductOrderDetailComponent } from './detail/product-order-detail.component';
+import { ProductOrderUpdateComponent } from './update/product-order-update.component';
+import { ProductOrderDeleteDialogComponent } from './delete/product-order-delete-dialog.component';
+import { ProductOrderRoutingModule } from './route/product-order-routing.module';
 
 @NgModule({
-  imports: [StoreSharedModule, RouterModule.forChild(productOrderRoute)],
+  imports: [SharedModule, ProductOrderRoutingModule],
   declarations: [ProductOrderComponent, ProductOrderDetailComponent, ProductOrderUpdateComponent, ProductOrderDeleteDialogComponent],
-  entryComponents: [ProductOrderDeleteDialogComponent]
 })
-export class StoreProductOrderModule {}
+export class ProductOrderModule {}

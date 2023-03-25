@@ -1,16 +1,13 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-
-import { StoreSharedModule } from 'app/shared/shared.module';
-import { InvoiceComponent } from './invoice.component';
-import { InvoiceDetailComponent } from './invoice-detail.component';
-import { InvoiceUpdateComponent } from './invoice-update.component';
-import { InvoiceDeleteDialogComponent } from './invoice-delete-dialog.component';
-import { invoiceRoute } from './invoice.route';
+import { SharedModule } from 'app/shared/shared.module';
+import { InvoiceComponent } from './list/invoice.component';
+import { InvoiceDetailComponent } from './detail/invoice-detail.component';
+import { InvoiceUpdateComponent } from './update/invoice-update.component';
+import { InvoiceDeleteDialogComponent } from './delete/invoice-delete-dialog.component';
+import { InvoiceRoutingModule } from './route/invoice-routing.module';
 
 @NgModule({
-  imports: [StoreSharedModule, RouterModule.forChild(invoiceRoute)],
+  imports: [SharedModule, InvoiceRoutingModule],
   declarations: [InvoiceComponent, InvoiceDetailComponent, InvoiceUpdateComponent, InvoiceDeleteDialogComponent],
-  entryComponents: [InvoiceDeleteDialogComponent]
 })
-export class StoreInvoiceModule {}
+export class InvoiceModule {}

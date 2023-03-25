@@ -1,13 +1,14 @@
-configurations {
-    developmentOnly
-    runtimeClasspath {
-        extendsFrom developmentOnly
+sourceSets {
+    test {
+        java {
+            exclude 'com/nano/store/config/MysqlTestContainer.java'
+        }
     }
 }
-
 dependencies {
-    developmentOnly "org.springframework.boot:spring-boot-devtools"
+    developmentOnly "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
     implementation "com.h2database:h2"
+    testImplementation "org.testcontainers:mysql"
 }
 
 def profiles = "dev"
@@ -20,29 +21,42 @@ if (project.hasProperty("tls")) {
 
 springBoot {
     buildInfo {
-		properties {
-			time = null
-		}
-	}
+        properties {
+            time = null
+        }
+    }
 }
 
 bootRun {
-    args = []
+    args = ["--spring.profiles.active=${profiles}"]
 }
 
-task webpack(type: NpmTask) {
+task webapp(type: NpmTask) {
+    inputs.property('appVersion', project.version)
     inputs.files("package-lock.json")
+        .withPropertyName('package-lock')
+        .withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.files("build.gradle")
+        .withPropertyName('build.gradle')
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files("angular.json")
+        .withPropertyName('angular.json')
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files("tsconfig.json", "tsconfig.app.json")
+        .withPropertyName("tsconfig")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir("webpack/")
+        .withPropertyName("webpack/")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir("src/main/webapp/")
-
-    def webpackDevFiles = fileTree("webpack//")
-    webpackDevFiles.exclude("webpack.prod.js")
-    inputs.files(webpackDevFiles)
-
+        .withPropertyName("webapp-source-dir")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.dir("build/resources/main/static/")
+        .withPropertyName("webapp-build-dir")
 
     dependsOn npmInstall
-    args = ["run", "webpack:build"]
+
+    args = ["run", "webapp:build"]
     environment = [APP_VERSION: project.version]
 }
 
@@ -59,5 +73,23 @@ processResources {
     }
 }
 
-processResources.dependsOn webpack
+task integrationTest(type: Test) {
+    maxHeapSize = "1G"
+    useJUnitPlatform()
+    description = "Execute integration tests."
+    group = "verification"
+    include "**/*IT*", "**/*IntTest*"
+    testLogging {
+        events 'FAILED', 'SKIPPED'
+    }
+    systemProperty('spring.profiles.active', 'testdev')
+    systemProperty('java.security.egd', 'file:/dev/./urandom')
+    // uncomment if the tests reports are not generated
+    // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
+    // ignoreFailures true
+    reports.html.enabled = false
+}
+integrationTest.dependsOn test
+
+processResources.dependsOn webapp
 bootJar.dependsOn processResources

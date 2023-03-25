@@ -1,80 +1,75 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { JhiLanguageService } from 'ng-jhipster';
+import { TranslateService } from '@ngx-translate/core';
 import { SessionStorageService } from 'ngx-webstorage';
 
 import { VERSION } from 'app/app.constants';
-import { JhiLanguageHelper } from 'app/core/language/language.helper';
+import { LANGUAGES } from 'app/config/language.constants';
+import { Account } from 'app/core/auth/account.model';
 import { AccountService } from 'app/core/auth/account.service';
-import { LoginModalService } from 'app/core/login/login-modal.service';
-import { LoginService } from 'app/core/login/login.service';
+import { LoginService } from 'app/login/login.service';
 import { ProfileService } from 'app/layouts/profiles/profile.service';
+import { EntityNavbarItems } from 'app/entities/entity-navbar-items';
 
 @Component({
   selector: 'jhi-navbar',
   templateUrl: './navbar.component.html',
-  styleUrls: ['navbar.scss']
+  styleUrls: ['./navbar.component.scss'],
 })
 export class NavbarComponent implements OnInit {
-  inProduction: boolean;
-  isNavbarCollapsed: boolean;
-  languages: any[];
-  swaggerEnabled: boolean;
-  modalRef: NgbModalRef;
-  version: string;
+  inProduction?: boolean;
+  isNavbarCollapsed = true;
+  languages = LANGUAGES;
+  openAPIEnabled?: boolean;
+  version = '';
+  account: Account | null = null;
+  entitiesNavbarItems: any[] = [];
 
   constructor(
     private loginService: LoginService,
-    private languageService: JhiLanguageService,
-    private languageHelper: JhiLanguageHelper,
-    private sessionStorage: SessionStorageService,
+    private translateService: TranslateService,
+    private sessionStorageService: SessionStorageService,
     private accountService: AccountService,
-    private loginModalService: LoginModalService,
     private profileService: ProfileService,
     private router: Router
   ) {
-    this.version = VERSION ? (VERSION.toLowerCase().startsWith('v') ? VERSION : 'v' + VERSION) : '';
-    this.isNavbarCollapsed = true;
+    if (VERSION) {
+      this.version = VERSION.toLowerCase().startsWith('v') ? VERSION : `v${VERSION}`;
+    }
   }
 
-  ngOnInit() {
-    this.languages = this.languageHelper.getAll();
-
+  ngOnInit(): void {
+    this.entitiesNavbarItems = EntityNavbarItems;
     this.profileService.getProfileInfo().subscribe(profileInfo => {
       this.inProduction = profileInfo.inProduction;
-      this.swaggerEnabled = profileInfo.swaggerEnabled;
+      this.openAPIEnabled = profileInfo.openAPIEnabled;
+    });
+
+    this.accountService.getAuthenticationState().subscribe(account => {
+      this.account = account;
     });
   }
 
-  changeLanguage(languageKey: string) {
-    this.sessionStorage.store('locale', languageKey);
-    this.languageService.changeLanguage(languageKey);
+  changeLanguage(languageKey: string): void {
+    this.sessionStorageService.store('locale', languageKey);
+    this.translateService.use(languageKey);
   }
 
-  collapseNavbar() {
+  collapseNavbar(): void {
     this.isNavbarCollapsed = true;
   }
 
-  isAuthenticated() {
-    return this.accountService.isAuthenticated();
+  login(): void {
+    this.router.navigate(['/login']);
   }
 
-  login() {
-    this.modalRef = this.loginModalService.open();
-  }
-
-  logout() {
+  logout(): void {
     this.collapseNavbar();
     this.loginService.logout();
     this.router.navigate(['']);
   }
 
-  toggleNavbar() {
+  toggleNavbar(): void {
     this.isNavbarCollapsed = !this.isNavbarCollapsed;
-  }
-
-  getImageUrl() {
-    return this.isAuthenticated() ? this.accountService.getImageUrl() : null;
   }
 }

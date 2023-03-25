@@ -1,13 +1,14 @@
 package com.nano.store.domain;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
-import com.nano.store.web.rest.TestUtil;
 
-public class OrderItemTest {
+import com.nano.store.web.rest.TestUtil;
+import org.junit.jupiter.api.Test;
+
+class OrderItemTest {
 
     @Test
-    public void equalsVerifier() throws Exception {
+    void equalsVerifier() throws Exception {
         TestUtil.equalsVerifier(OrderItem.class);
         OrderItem orderItem1 = new OrderItem();
         orderItem1.setId(1L);

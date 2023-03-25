@@ -2,15 +2,13 @@ package com.nano.store.service;
 
 import com.nano.store.domain.ProductOrder;
 import com.nano.store.repository.ProductOrderRepository;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 /**
  * Service Implementation for managing {@link ProductOrder}.
@@ -39,6 +37,44 @@ public class ProductOrderService {
     }
 
     /**
+     * Update a productOrder.
+     *
+     * @param productOrder the entity to save.
+     * @return the persisted entity.
+     */
+    public ProductOrder update(ProductOrder productOrder) {
+        log.debug("Request to update ProductOrder : {}", productOrder);
+        return productOrderRepository.save(productOrder);
+    }
+
+    /**
+     * Partially update a productOrder.
+     *
+     * @param productOrder the entity to update partially.
+     * @return the persisted entity.
+     */
+    public Optional<ProductOrder> partialUpdate(ProductOrder productOrder) {
+        log.debug("Request to partially update ProductOrder : {}", productOrder);
+
+        return productOrderRepository
+            .findById(productOrder.getId())
+            .map(existingProductOrder -> {
+                if (productOrder.getPlacedDate() != null) {
+                    existingProductOrder.setPlacedDate(productOrder.getPlacedDate());
+                }
+                if (productOrder.getStatus() != null) {
+                    existingProductOrder.setStatus(productOrder.getStatus());
+                }
+                if (productOrder.getCode() != null) {
+                    existingProductOrder.setCode(productOrder.getCode());
+                }
+
+                return existingProductOrder;
+            })
+            .map(productOrderRepository::save);
+    }
+
+    /**
      * Get all the productOrders.
      *
      * @param pageable the pagination information.
@@ -50,6 +86,14 @@ public class ProductOrderService {
         return productOrderRepository.findAll(pageable);
     }
 
+    /**
+     * Get all the productOrders with eager load of many-to-many relationships.
+     *
+     * @return the list of entities.
+     */
+    public Page<ProductOrder> findAllWithEagerRelationships(Pageable pageable) {
+        return productOrderRepository.findAllWithEagerRelationships(pageable);
+    }
 
     /**
      * Get one productOrder by id.
@@ -60,7 +104,7 @@ public class ProductOrderService {
     @Transactional(readOnly = true)
     public Optional<ProductOrder> findOne(Long id) {
         log.debug("Request to get ProductOrder : {}", id);
-        return productOrderRepository.findById(id);
+        return productOrderRepository.findOneWithEagerRelationships(id);
     }
 
     /**

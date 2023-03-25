@@ -1,30 +1,30 @@
 package com.nano.store.domain;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModel;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import javax.persistence.*;
-import javax.validation.constraints.*;
-
+import com.nano.store.domain.enumeration.Size;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import java.math.BigDecimal;
-
-import com.nano.store.domain.enumeration.Size;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * Product sold by the Online store
  */
-@ApiModel(description = "Product sold by the Online store")
+@Schema(description = "Product sold by the Online store")
 @Entity
 @Table(name = "product")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Product implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @NotNull
@@ -52,12 +52,18 @@ public class Product implements Serializable {
     private String imageContentType;
 
     @ManyToOne
-    @JsonIgnoreProperties("products")
+    @JsonIgnoreProperties(value = { "products" }, allowSetters = true)
     private ProductCategory productCategory;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
     public Long getId() {
-        return id;
+        return this.id;
+    }
+
+    public Product id(Long id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(Long id) {
@@ -65,11 +71,11 @@ public class Product implements Serializable {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public Product name(String name) {
-        this.name = name;
+        this.setName(name);
         return this;
     }
 
@@ -78,11 +84,11 @@ public class Product implements Serializable {
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public Product description(String description) {
-        this.description = description;
+        this.setDescription(description);
         return this;
     }
 
@@ -91,11 +97,11 @@ public class Product implements Serializable {
     }
 
     public BigDecimal getPrice() {
-        return price;
+        return this.price;
     }
 
     public Product price(BigDecimal price) {
-        this.price = price;
+        this.setPrice(price);
         return this;
     }
 
@@ -104,11 +110,11 @@ public class Product implements Serializable {
     }
 
     public Size getSize() {
-        return size;
+        return this.size;
     }
 
     public Product size(Size size) {
-        this.size = size;
+        this.setSize(size);
         return this;
     }
 
@@ -117,11 +123,11 @@ public class Product implements Serializable {
     }
 
     public byte[] getImage() {
-        return image;
+        return this.image;
     }
 
     public Product image(byte[] image) {
-        this.image = image;
+        this.setImage(image);
         return this;
     }
 
@@ -130,7 +136,7 @@ public class Product implements Serializable {
     }
 
     public String getImageContentType() {
-        return imageContentType;
+        return this.imageContentType;
     }
 
     public Product imageContentType(String imageContentType) {
@@ -143,18 +149,19 @@ public class Product implements Serializable {
     }
 
     public ProductCategory getProductCategory() {
-        return productCategory;
-    }
-
-    public Product productCategory(ProductCategory productCategory) {
-        this.productCategory = productCategory;
-        return this;
+        return this.productCategory;
     }
 
     public void setProductCategory(ProductCategory productCategory) {
         this.productCategory = productCategory;
     }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
+
+    public Product productCategory(ProductCategory productCategory) {
+        this.setProductCategory(productCategory);
+        return this;
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
@@ -169,9 +176,11 @@ public class Product implements Serializable {
 
     @Override
     public int hashCode() {
-        return 31;
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "Product{" +

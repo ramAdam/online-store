@@ -1,80 +1,68 @@
 {
-    "name": "Invoice",
-    "fields": [
-        {
-            "fieldName": "date",
-            "fieldType": "Instant",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "details",
-            "fieldType": "String"
-        },
-        {
-            "fieldName": "status",
-            "fieldType": "InvoiceStatus",
-            "fieldValues": "PAID,ISSUED,CANCELLED",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "paymentMethod",
-            "fieldType": "PaymentMethod",
-            "fieldValues": "CREDIT_CARD,CASH_ON_DELIVERY,PAYPAL",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "paymentDate",
-            "fieldType": "Instant",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "paymentAmount",
-            "fieldType": "BigDecimal",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "code",
-            "fieldType": "String",
-            "fieldValidateRules": [
-                "required"
-            ]
-        }
-    ],
-    "relationships": [
-        {
-            "relationshipType": "one-to-many",
-            "otherEntityName": "shipment",
-            "otherEntityRelationshipName": "invoice",
-            "relationshipName": "shipment"
-        },
-        {
-            "relationshipType": "many-to-one",
-            "otherEntityName": "productOrder",
-            "otherEntityRelationshipName": "invoice",
-            "relationshipName": "order",
-            "otherEntityField": "code"
-        }
-    ],
-    "changelogDate": "20191227011758",
-    "entityTableName": "invoice",
-    "dto": "no",
-    "pagination": "pagination",
-    "service": "serviceClass",
-    "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "readOnly": false,
-    "clientRootFolder": "",
-    "applications": "*",
-    "searchEngine": false,
-    "databaseType": "sql"
+  "applications": "*",
+  "changelogDate": "20191227011758",
+  "clientRootFolder": "",
+  "databaseType": "sql",
+  "dto": "no",
+  "entityTableName": "invoice",
+  "fields": [
+    {
+      "fieldName": "date",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "details",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "InvoiceStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "PAID,ISSUED,CANCELLED"
+    },
+    {
+      "fieldName": "paymentMethod",
+      "fieldType": "PaymentMethod",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "CREDIT_CARD,CASH_ON_DELIVERY,PAYPAL"
+    },
+    {
+      "fieldName": "paymentDate",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "paymentAmount",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "code",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Invoice",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "shipment",
+      "otherEntityRelationshipName": "invoice",
+      "relationshipName": "shipment",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityField": "code",
+      "otherEntityName": "productOrder",
+      "otherEntityRelationshipName": "invoice",
+      "relationshipName": "order",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": false,
+  "service": "serviceClass"
 }

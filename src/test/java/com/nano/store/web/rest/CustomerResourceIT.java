@@ -1,39 +1,34 @@
 package com.nano.store.web.rest;
 
-import com.nano.store.StoreApp;
-import com.nano.store.domain.Customer;
-import com.nano.store.repository.CustomerRepository;
-import com.nano.store.service.CustomerService;
-import com.nano.store.web.rest.errors.ExceptionTranslator;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.Validator;
-
-import javax.persistence.EntityManager;
-import java.util.List;
-
-import static com.nano.store.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.nano.store.IntegrationTest;
+import com.nano.store.domain.Customer;
 import com.nano.store.domain.enumeration.Gender;
+import com.nano.store.repository.CustomerRepository;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Integration tests for the {@link CustomerResource} REST controller.
  */
-@SpringBootTest(classes = StoreApp.class)
-public class CustomerResourceIT {
+@IntegrationTest
+@AutoConfigureMockMvc
+@WithMockUser
+class CustomerResourceIT {
 
     private static final String DEFAULT_FIRST_NAME = "AAAAAAAAAA";
     private static final String UPDATED_FIRST_NAME = "BBBBBBBBBB";
@@ -44,8 +39,8 @@ public class CustomerResourceIT {
     private static final Gender DEFAULT_GENDER = Gender.MALE;
     private static final Gender UPDATED_GENDER = Gender.FEMALE;
 
-    private static final String DEFAULT_EMAIL = "u@/.<m";
-    private static final String UPDATED_EMAIL = "<g@t.i{";
+    private static final String DEFAULT_EMAIL = "E&7R(@dZ,.2WD";
+    private static final String UPDATED_EMAIL = "k\"@L:m1D.)R";
 
     private static final String DEFAULT_PHONE = "AAAAAAAAAA";
     private static final String UPDATED_PHONE = "BBBBBBBBBB";
@@ -62,42 +57,22 @@ public class CustomerResourceIT {
     private static final String DEFAULT_COUNTRY = "AAAAAAAAAA";
     private static final String UPDATED_COUNTRY = "BBBBBBBBBB";
 
+    private static final String ENTITY_API_URL = "/api/customers";
+    private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+
+    private static Random random = new Random();
+    private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
+
     @Autowired
     private CustomerRepository customerRepository;
-
-    @Autowired
-    private CustomerService customerService;
-
-    @Autowired
-    private MappingJackson2HttpMessageConverter jacksonMessageConverter;
-
-    @Autowired
-    private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
-
-    @Autowired
-    private ExceptionTranslator exceptionTranslator;
 
     @Autowired
     private EntityManager em;
 
     @Autowired
-    private Validator validator;
-
     private MockMvc restCustomerMockMvc;
 
     private Customer customer;
-
-    @BeforeEach
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-        final CustomerResource customerResource = new CustomerResource(customerService);
-        this.restCustomerMockMvc = MockMvcBuilders.standaloneSetup(customerResource)
-            .setCustomArgumentResolvers(pageableArgumentResolver)
-            .setControllerAdvice(exceptionTranslator)
-            .setConversionService(createFormattingConversionService())
-            .setMessageConverters(jacksonMessageConverter)
-            .setValidator(validator).build();
-    }
 
     /**
      * Create an entity for this test.
@@ -118,6 +93,7 @@ public class CustomerResourceIT {
             .country(DEFAULT_COUNTRY);
         return customer;
     }
+
     /**
      * Create an updated entity for this test.
      *
@@ -145,13 +121,11 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void createCustomer() throws Exception {
+    void createCustomer() throws Exception {
         int databaseSizeBeforeCreate = customerRepository.findAll().size();
-
         // Create the Customer
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isCreated());
 
         // Validate the Customer in the database
@@ -171,16 +145,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void createCustomerWithExistingId() throws Exception {
-        int databaseSizeBeforeCreate = customerRepository.findAll().size();
-
+    void createCustomerWithExistingId() throws Exception {
         // Create the Customer with an existing ID
         customer.setId(1L);
 
+        int databaseSizeBeforeCreate = customerRepository.findAll().size();
+
         // An entity with an existing ID cannot be created, so this API call must fail
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         // Validate the Customer in the database
@@ -188,19 +161,17 @@ public class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeCreate);
     }
 
-
     @Test
     @Transactional
-    public void checkFirstNameIsRequired() throws Exception {
+    void checkFirstNameIsRequired() throws Exception {
         int databaseSizeBeforeTest = customerRepository.findAll().size();
         // set the field null
         customer.setFirstName(null);
 
         // Create the Customer, which fails.
 
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         List<Customer> customerList = customerRepository.findAll();
@@ -209,16 +180,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void checkLastNameIsRequired() throws Exception {
+    void checkLastNameIsRequired() throws Exception {
         int databaseSizeBeforeTest = customerRepository.findAll().size();
         // set the field null
         customer.setLastName(null);
 
         // Create the Customer, which fails.
 
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         List<Customer> customerList = customerRepository.findAll();
@@ -227,16 +197,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void checkGenderIsRequired() throws Exception {
+    void checkGenderIsRequired() throws Exception {
         int databaseSizeBeforeTest = customerRepository.findAll().size();
         // set the field null
         customer.setGender(null);
 
         // Create the Customer, which fails.
 
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         List<Customer> customerList = customerRepository.findAll();
@@ -245,16 +214,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void checkEmailIsRequired() throws Exception {
+    void checkEmailIsRequired() throws Exception {
         int databaseSizeBeforeTest = customerRepository.findAll().size();
         // set the field null
         customer.setEmail(null);
 
         // Create the Customer, which fails.
 
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         List<Customer> customerList = customerRepository.findAll();
@@ -263,16 +231,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void checkPhoneIsRequired() throws Exception {
+    void checkPhoneIsRequired() throws Exception {
         int databaseSizeBeforeTest = customerRepository.findAll().size();
         // set the field null
         customer.setPhone(null);
 
         // Create the Customer, which fails.
 
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         List<Customer> customerList = customerRepository.findAll();
@@ -281,16 +248,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void checkAddressLine1IsRequired() throws Exception {
+    void checkAddressLine1IsRequired() throws Exception {
         int databaseSizeBeforeTest = customerRepository.findAll().size();
         // set the field null
         customer.setAddressLine1(null);
 
         // Create the Customer, which fails.
 
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         List<Customer> customerList = customerRepository.findAll();
@@ -299,16 +265,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void checkCityIsRequired() throws Exception {
+    void checkCityIsRequired() throws Exception {
         int databaseSizeBeforeTest = customerRepository.findAll().size();
         // set the field null
         customer.setCity(null);
 
         // Create the Customer, which fails.
 
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         List<Customer> customerList = customerRepository.findAll();
@@ -317,16 +282,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void checkCountryIsRequired() throws Exception {
+    void checkCountryIsRequired() throws Exception {
         int databaseSizeBeforeTest = customerRepository.findAll().size();
         // set the field null
         customer.setCountry(null);
 
         // Create the Customer, which fails.
 
-        restCustomerMockMvc.perform(post("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
             .andExpect(status().isBadRequest());
 
         List<Customer> customerList = customerRepository.findAll();
@@ -335,14 +299,15 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void getAllCustomers() throws Exception {
+    void getAllCustomers() throws Exception {
         // Initialize the database
         customerRepository.saveAndFlush(customer);
 
         // Get all the customerList
-        restCustomerMockMvc.perform(get("/api/customers?sort=id,desc"))
+        restCustomerMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(customer.getId().intValue())))
             .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRST_NAME)))
             .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LAST_NAME)))
@@ -354,17 +319,18 @@ public class CustomerResourceIT {
             .andExpect(jsonPath("$.[*].city").value(hasItem(DEFAULT_CITY)))
             .andExpect(jsonPath("$.[*].country").value(hasItem(DEFAULT_COUNTRY)));
     }
-    
+
     @Test
     @Transactional
-    public void getCustomer() throws Exception {
+    void getCustomer() throws Exception {
         // Initialize the database
         customerRepository.saveAndFlush(customer);
 
         // Get the customer
-        restCustomerMockMvc.perform(get("/api/customers/{id}", customer.getId()))
+        restCustomerMockMvc
+            .perform(get(ENTITY_API_URL_ID, customer.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(customer.getId().intValue()))
             .andExpect(jsonPath("$.firstName").value(DEFAULT_FIRST_NAME))
             .andExpect(jsonPath("$.lastName").value(DEFAULT_LAST_NAME))
@@ -379,17 +345,16 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void getNonExistingCustomer() throws Exception {
+    void getNonExistingCustomer() throws Exception {
         // Get the customer
-        restCustomerMockMvc.perform(get("/api/customers/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
+        restCustomerMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
     }
 
     @Test
     @Transactional
-    public void updateCustomer() throws Exception {
+    void putExistingCustomer() throws Exception {
         // Initialize the database
-        customerService.save(customer);
+        customerRepository.saveAndFlush(customer);
 
         int databaseSizeBeforeUpdate = customerRepository.findAll().size();
 
@@ -408,9 +373,12 @@ public class CustomerResourceIT {
             .city(UPDATED_CITY)
             .country(UPDATED_COUNTRY);
 
-        restCustomerMockMvc.perform(put("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedCustomer)))
+        restCustomerMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, updatedCustomer.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(updatedCustomer))
+            )
             .andExpect(status().isOk());
 
         // Validate the Customer in the database
@@ -430,15 +398,17 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void updateNonExistingCustomer() throws Exception {
+    void putNonExistingCustomer() throws Exception {
         int databaseSizeBeforeUpdate = customerRepository.findAll().size();
-
-        // Create the Customer
+        customer.setId(count.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restCustomerMockMvc.perform(put("/api/customers")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(customer)))
+        restCustomerMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, customer.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(customer))
+            )
             .andExpect(status().isBadRequest());
 
         // Validate the Customer in the database
@@ -448,15 +418,195 @@ public class CustomerResourceIT {
 
     @Test
     @Transactional
-    public void deleteCustomer() throws Exception {
+    void putWithIdMismatchCustomer() throws Exception {
+        int databaseSizeBeforeUpdate = customerRepository.findAll().size();
+        customer.setId(count.incrementAndGet());
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restCustomerMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, count.incrementAndGet())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(customer))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Customer in the database
+        List<Customer> customerList = customerRepository.findAll();
+        assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void putWithMissingIdPathParamCustomer() throws Exception {
+        int databaseSizeBeforeUpdate = customerRepository.findAll().size();
+        customer.setId(count.incrementAndGet());
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restCustomerMockMvc
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(customer)))
+            .andExpect(status().isMethodNotAllowed());
+
+        // Validate the Customer in the database
+        List<Customer> customerList = customerRepository.findAll();
+        assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void partialUpdateCustomerWithPatch() throws Exception {
         // Initialize the database
-        customerService.save(customer);
+        customerRepository.saveAndFlush(customer);
+
+        int databaseSizeBeforeUpdate = customerRepository.findAll().size();
+
+        // Update the customer using partial update
+        Customer partialUpdatedCustomer = new Customer();
+        partialUpdatedCustomer.setId(customer.getId());
+
+        partialUpdatedCustomer
+            .lastName(UPDATED_LAST_NAME)
+            .gender(UPDATED_GENDER)
+            .email(UPDATED_EMAIL)
+            .addressLine1(UPDATED_ADDRESS_LINE_1)
+            .country(UPDATED_COUNTRY);
+
+        restCustomerMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedCustomer.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedCustomer))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the Customer in the database
+        List<Customer> customerList = customerRepository.findAll();
+        assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
+        Customer testCustomer = customerList.get(customerList.size() - 1);
+        assertThat(testCustomer.getFirstName()).isEqualTo(DEFAULT_FIRST_NAME);
+        assertThat(testCustomer.getLastName()).isEqualTo(UPDATED_LAST_NAME);
+        assertThat(testCustomer.getGender()).isEqualTo(UPDATED_GENDER);
+        assertThat(testCustomer.getEmail()).isEqualTo(UPDATED_EMAIL);
+        assertThat(testCustomer.getPhone()).isEqualTo(DEFAULT_PHONE);
+        assertThat(testCustomer.getAddressLine1()).isEqualTo(UPDATED_ADDRESS_LINE_1);
+        assertThat(testCustomer.getAddressLine2()).isEqualTo(DEFAULT_ADDRESS_LINE_2);
+        assertThat(testCustomer.getCity()).isEqualTo(DEFAULT_CITY);
+        assertThat(testCustomer.getCountry()).isEqualTo(UPDATED_COUNTRY);
+    }
+
+    @Test
+    @Transactional
+    void fullUpdateCustomerWithPatch() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        int databaseSizeBeforeUpdate = customerRepository.findAll().size();
+
+        // Update the customer using partial update
+        Customer partialUpdatedCustomer = new Customer();
+        partialUpdatedCustomer.setId(customer.getId());
+
+        partialUpdatedCustomer
+            .firstName(UPDATED_FIRST_NAME)
+            .lastName(UPDATED_LAST_NAME)
+            .gender(UPDATED_GENDER)
+            .email(UPDATED_EMAIL)
+            .phone(UPDATED_PHONE)
+            .addressLine1(UPDATED_ADDRESS_LINE_1)
+            .addressLine2(UPDATED_ADDRESS_LINE_2)
+            .city(UPDATED_CITY)
+            .country(UPDATED_COUNTRY);
+
+        restCustomerMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedCustomer.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedCustomer))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the Customer in the database
+        List<Customer> customerList = customerRepository.findAll();
+        assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
+        Customer testCustomer = customerList.get(customerList.size() - 1);
+        assertThat(testCustomer.getFirstName()).isEqualTo(UPDATED_FIRST_NAME);
+        assertThat(testCustomer.getLastName()).isEqualTo(UPDATED_LAST_NAME);
+        assertThat(testCustomer.getGender()).isEqualTo(UPDATED_GENDER);
+        assertThat(testCustomer.getEmail()).isEqualTo(UPDATED_EMAIL);
+        assertThat(testCustomer.getPhone()).isEqualTo(UPDATED_PHONE);
+        assertThat(testCustomer.getAddressLine1()).isEqualTo(UPDATED_ADDRESS_LINE_1);
+        assertThat(testCustomer.getAddressLine2()).isEqualTo(UPDATED_ADDRESS_LINE_2);
+        assertThat(testCustomer.getCity()).isEqualTo(UPDATED_CITY);
+        assertThat(testCustomer.getCountry()).isEqualTo(UPDATED_COUNTRY);
+    }
+
+    @Test
+    @Transactional
+    void patchNonExistingCustomer() throws Exception {
+        int databaseSizeBeforeUpdate = customerRepository.findAll().size();
+        customer.setId(count.incrementAndGet());
+
+        // If the entity doesn't have an ID, it will throw BadRequestAlertException
+        restCustomerMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, customer.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(customer))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Customer in the database
+        List<Customer> customerList = customerRepository.findAll();
+        assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void patchWithIdMismatchCustomer() throws Exception {
+        int databaseSizeBeforeUpdate = customerRepository.findAll().size();
+        customer.setId(count.incrementAndGet());
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restCustomerMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, count.incrementAndGet())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(customer))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Customer in the database
+        List<Customer> customerList = customerRepository.findAll();
+        assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void patchWithMissingIdPathParamCustomer() throws Exception {
+        int databaseSizeBeforeUpdate = customerRepository.findAll().size();
+        customer.setId(count.incrementAndGet());
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restCustomerMockMvc
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(customer)))
+            .andExpect(status().isMethodNotAllowed());
+
+        // Validate the Customer in the database
+        List<Customer> customerList = customerRepository.findAll();
+        assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void deleteCustomer() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
 
         int databaseSizeBeforeDelete = customerRepository.findAll().size();
 
         // Delete the customer
-        restCustomerMockMvc.perform(delete("/api/customers/{id}", customer.getId())
-            .accept(TestUtil.APPLICATION_JSON_UTF8))
+        restCustomerMockMvc
+            .perform(delete(ENTITY_API_URL_ID, customer.getId()).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

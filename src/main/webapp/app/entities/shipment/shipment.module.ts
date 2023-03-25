@@ -1,16 +1,13 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-
-import { StoreSharedModule } from 'app/shared/shared.module';
-import { ShipmentComponent } from './shipment.component';
-import { ShipmentDetailComponent } from './shipment-detail.component';
-import { ShipmentUpdateComponent } from './shipment-update.component';
-import { ShipmentDeleteDialogComponent } from './shipment-delete-dialog.component';
-import { shipmentRoute } from './shipment.route';
+import { SharedModule } from 'app/shared/shared.module';
+import { ShipmentComponent } from './list/shipment.component';
+import { ShipmentDetailComponent } from './detail/shipment-detail.component';
+import { ShipmentUpdateComponent } from './update/shipment-update.component';
+import { ShipmentDeleteDialogComponent } from './delete/shipment-delete-dialog.component';
+import { ShipmentRoutingModule } from './route/shipment-routing.module';
 
 @NgModule({
-  imports: [StoreSharedModule, RouterModule.forChild(shipmentRoute)],
+  imports: [SharedModule, ShipmentRoutingModule],
   declarations: [ShipmentComponent, ShipmentDetailComponent, ShipmentUpdateComponent, ShipmentDeleteDialogComponent],
-  entryComponents: [ShipmentDeleteDialogComponent]
 })
-export class StoreShipmentModule {}
+export class ShipmentModule {}

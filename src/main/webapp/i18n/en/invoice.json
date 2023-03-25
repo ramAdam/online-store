@@ -3,6 +3,7 @@
     "invoice": {
       "home": {
         "title": "Invoices",
+        "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Invoice",
         "createOrEditLabel": "Create or edit a Invoice",
         "notFound": "No Invoices found"
@@ -16,6 +17,7 @@
       "detail": {
         "title": "Invoice"
       },
+      "id": "ID",
       "date": "Date",
       "details": "Details",
       "status": "Status",

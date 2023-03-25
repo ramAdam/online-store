@@ -1,41 +1,47 @@
 package com.nano.store.web.rest;
 
-import com.nano.store.StoreApp;
-import com.nano.store.domain.Product;
-import com.nano.store.repository.ProductRepository;
-import com.nano.store.service.ProductService;
-import com.nano.store.web.rest.errors.ExceptionTranslator;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Base64Utils;
-import org.springframework.validation.Validator;
-
-import javax.persistence.EntityManager;
-import java.math.BigDecimal;
-import java.util.List;
-
-import static com.nano.store.web.rest.TestUtil.createFormattingConversionService;
+import static com.nano.store.web.rest.TestUtil.sameNumber;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.nano.store.IntegrationTest;
+import com.nano.store.domain.Product;
 import com.nano.store.domain.enumeration.Size;
+import com.nano.store.repository.ProductRepository;
+import com.nano.store.service.ProductService;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
+
 /**
  * Integration tests for the {@link ProductResource} REST controller.
  */
-@SpringBootTest(classes = StoreApp.class)
-public class ProductResourceIT {
+@IntegrationTest
+@ExtendWith(MockitoExtension.class)
+@AutoConfigureMockMvc
+@WithMockUser
+class ProductResourceIT {
 
     private static final String DEFAULT_NAME = "AAAAAAAAAA";
     private static final String UPDATED_NAME = "BBBBBBBBBB";
@@ -54,42 +60,28 @@ public class ProductResourceIT {
     private static final String DEFAULT_IMAGE_CONTENT_TYPE = "image/jpg";
     private static final String UPDATED_IMAGE_CONTENT_TYPE = "image/png";
 
+    private static final String ENTITY_API_URL = "/api/products";
+    private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+
+    private static Random random = new Random();
+    private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
+
     @Autowired
     private ProductRepository productRepository;
 
-    @Autowired
-    private ProductService productService;
+    @Mock
+    private ProductRepository productRepositoryMock;
 
-    @Autowired
-    private MappingJackson2HttpMessageConverter jacksonMessageConverter;
-
-    @Autowired
-    private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
-
-    @Autowired
-    private ExceptionTranslator exceptionTranslator;
+    @Mock
+    private ProductService productServiceMock;
 
     @Autowired
     private EntityManager em;
 
     @Autowired
-    private Validator validator;
-
     private MockMvc restProductMockMvc;
 
     private Product product;
-
-    @BeforeEach
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-        final ProductResource productResource = new ProductResource(productService);
-        this.restProductMockMvc = MockMvcBuilders.standaloneSetup(productResource)
-            .setCustomArgumentResolvers(pageableArgumentResolver)
-            .setControllerAdvice(exceptionTranslator)
-            .setConversionService(createFormattingConversionService())
-            .setMessageConverters(jacksonMessageConverter)
-            .setValidator(validator).build();
-    }
 
     /**
      * Create an entity for this test.
@@ -107,6 +99,7 @@ public class ProductResourceIT {
             .imageContentType(DEFAULT_IMAGE_CONTENT_TYPE);
         return product;
     }
+
     /**
      * Create an updated entity for this test.
      *
@@ -131,13 +124,11 @@ public class ProductResourceIT {
 
     @Test
     @Transactional
-    public void createProduct() throws Exception {
+    void createProduct() throws Exception {
         int databaseSizeBeforeCreate = productRepository.findAll().size();
-
         // Create the Product
-        restProductMockMvc.perform(post("/api/products")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(product)))
+        restProductMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(product)))
             .andExpect(status().isCreated());
 
         // Validate the Product in the database
@@ -146,7 +137,7 @@ public class ProductResourceIT {
         Product testProduct = productList.get(productList.size() - 1);
         assertThat(testProduct.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testProduct.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
-        assertThat(testProduct.getPrice()).isEqualTo(DEFAULT_PRICE);
+        assertThat(testProduct.getPrice()).isEqualByComparingTo(DEFAULT_PRICE);
         assertThat(testProduct.getSize()).isEqualTo(DEFAULT_SIZE);
         assertThat(testProduct.getImage()).isEqualTo(DEFAULT_IMAGE);
         assertThat(testProduct.getImageContentType()).isEqualTo(DEFAULT_IMAGE_CONTENT_TYPE);
@@ -154,16 +145,15 @@ public class ProductResourceIT {
 
     @Test
     @Transactional
-    public void createProductWithExistingId() throws Exception {
-        int databaseSizeBeforeCreate = productRepository.findAll().size();
-
+    void createProductWithExistingId() throws Exception {
         // Create the Product with an existing ID
         product.setId(1L);
 
+        int databaseSizeBeforeCreate = productRepository.findAll().size();
+
         // An entity with an existing ID cannot be created, so this API call must fail
-        restProductMockMvc.perform(post("/api/products")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(product)))
+        restProductMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(product)))
             .andExpect(status().isBadRequest());
 
         // Validate the Product in the database
@@ -171,19 +161,17 @@ public class ProductResourceIT {
         assertThat(productList).hasSize(databaseSizeBeforeCreate);
     }
 
-
     @Test
     @Transactional
-    public void checkNameIsRequired() throws Exception {
+    void checkNameIsRequired() throws Exception {
         int databaseSizeBeforeTest = productRepository.findAll().size();
         // set the field null
         product.setName(null);
 
         // Create the Product, which fails.
 
-        restProductMockMvc.perform(post("/api/products")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(product)))
+        restProductMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(product)))
             .andExpect(status().isBadRequest());
 
         List<Product> productList = productRepository.findAll();
@@ -192,16 +180,15 @@ public class ProductResourceIT {
 
     @Test
     @Transactional
-    public void checkPriceIsRequired() throws Exception {
+    void checkPriceIsRequired() throws Exception {
         int databaseSizeBeforeTest = productRepository.findAll().size();
         // set the field null
         product.setPrice(null);
 
         // Create the Product, which fails.
 
-        restProductMockMvc.perform(post("/api/products")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(product)))
+        restProductMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(product)))
             .andExpect(status().isBadRequest());
 
         List<Product> productList = productRepository.findAll();
@@ -210,16 +197,15 @@ public class ProductResourceIT {
 
     @Test
     @Transactional
-    public void checkSizeIsRequired() throws Exception {
+    void checkSizeIsRequired() throws Exception {
         int databaseSizeBeforeTest = productRepository.findAll().size();
         // set the field null
         product.setSize(null);
 
         // Create the Product, which fails.
 
-        restProductMockMvc.perform(post("/api/products")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(product)))
+        restProductMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(product)))
             .andExpect(status().isBadRequest());
 
         List<Product> productList = productRepository.findAll();
@@ -228,37 +214,56 @@ public class ProductResourceIT {
 
     @Test
     @Transactional
-    public void getAllProducts() throws Exception {
+    void getAllProducts() throws Exception {
         // Initialize the database
         productRepository.saveAndFlush(product);
 
         // Get all the productList
-        restProductMockMvc.perform(get("/api/products?sort=id,desc"))
+        restProductMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(product.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
             .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
-            .andExpect(jsonPath("$.[*].price").value(hasItem(DEFAULT_PRICE.intValue())))
+            .andExpect(jsonPath("$.[*].price").value(hasItem(sameNumber(DEFAULT_PRICE))))
             .andExpect(jsonPath("$.[*].size").value(hasItem(DEFAULT_SIZE.toString())))
             .andExpect(jsonPath("$.[*].imageContentType").value(hasItem(DEFAULT_IMAGE_CONTENT_TYPE)))
             .andExpect(jsonPath("$.[*].image").value(hasItem(Base64Utils.encodeToString(DEFAULT_IMAGE))));
     }
-    
+
+    @SuppressWarnings({ "unchecked" })
+    void getAllProductsWithEagerRelationshipsIsEnabled() throws Exception {
+        when(productServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
+
+        restProductMockMvc.perform(get(ENTITY_API_URL + "?eagerload=true")).andExpect(status().isOk());
+
+        verify(productServiceMock, times(1)).findAllWithEagerRelationships(any());
+    }
+
+    @SuppressWarnings({ "unchecked" })
+    void getAllProductsWithEagerRelationshipsIsNotEnabled() throws Exception {
+        when(productServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
+
+        restProductMockMvc.perform(get(ENTITY_API_URL + "?eagerload=false")).andExpect(status().isOk());
+        verify(productRepositoryMock, times(1)).findAll(any(Pageable.class));
+    }
+
     @Test
     @Transactional
-    public void getProduct() throws Exception {
+    void getProduct() throws Exception {
         // Initialize the database
         productRepository.saveAndFlush(product);
 
         // Get the product
-        restProductMockMvc.perform(get("/api/products/{id}", product.getId()))
+        restProductMockMvc
+            .perform(get(ENTITY_API_URL_ID, product.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(product.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
             .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
-            .andExpect(jsonPath("$.price").value(DEFAULT_PRICE.intValue()))
+            .andExpect(jsonPath("$.price").value(sameNumber(DEFAULT_PRICE)))
             .andExpect(jsonPath("$.size").value(DEFAULT_SIZE.toString()))
             .andExpect(jsonPath("$.imageContentType").value(DEFAULT_IMAGE_CONTENT_TYPE))
             .andExpect(jsonPath("$.image").value(Base64Utils.encodeToString(DEFAULT_IMAGE)));
@@ -266,17 +271,16 @@ public class ProductResourceIT {
 
     @Test
     @Transactional
-    public void getNonExistingProduct() throws Exception {
+    void getNonExistingProduct() throws Exception {
         // Get the product
-        restProductMockMvc.perform(get("/api/products/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
+        restProductMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
     }
 
     @Test
     @Transactional
-    public void updateProduct() throws Exception {
+    void putExistingProduct() throws Exception {
         // Initialize the database
-        productService.save(product);
+        productRepository.saveAndFlush(product);
 
         int databaseSizeBeforeUpdate = productRepository.findAll().size();
 
@@ -292,9 +296,12 @@ public class ProductResourceIT {
             .image(UPDATED_IMAGE)
             .imageContentType(UPDATED_IMAGE_CONTENT_TYPE);
 
-        restProductMockMvc.perform(put("/api/products")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedProduct)))
+        restProductMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, updatedProduct.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(updatedProduct))
+            )
             .andExpect(status().isOk());
 
         // Validate the Product in the database
@@ -303,7 +310,7 @@ public class ProductResourceIT {
         Product testProduct = productList.get(productList.size() - 1);
         assertThat(testProduct.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testProduct.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
-        assertThat(testProduct.getPrice()).isEqualTo(UPDATED_PRICE);
+        assertThat(testProduct.getPrice()).isEqualByComparingTo(UPDATED_PRICE);
         assertThat(testProduct.getSize()).isEqualTo(UPDATED_SIZE);
         assertThat(testProduct.getImage()).isEqualTo(UPDATED_IMAGE);
         assertThat(testProduct.getImageContentType()).isEqualTo(UPDATED_IMAGE_CONTENT_TYPE);
@@ -311,15 +318,17 @@ public class ProductResourceIT {
 
     @Test
     @Transactional
-    public void updateNonExistingProduct() throws Exception {
+    void putNonExistingProduct() throws Exception {
         int databaseSizeBeforeUpdate = productRepository.findAll().size();
-
-        // Create the Product
+        product.setId(count.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restProductMockMvc.perform(put("/api/products")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(product)))
+        restProductMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, product.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(product))
+            )
             .andExpect(status().isBadRequest());
 
         // Validate the Product in the database
@@ -329,15 +338,181 @@ public class ProductResourceIT {
 
     @Test
     @Transactional
-    public void deleteProduct() throws Exception {
+    void putWithIdMismatchProduct() throws Exception {
+        int databaseSizeBeforeUpdate = productRepository.findAll().size();
+        product.setId(count.incrementAndGet());
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restProductMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, count.incrementAndGet())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(product))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Product in the database
+        List<Product> productList = productRepository.findAll();
+        assertThat(productList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void putWithMissingIdPathParamProduct() throws Exception {
+        int databaseSizeBeforeUpdate = productRepository.findAll().size();
+        product.setId(count.incrementAndGet());
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restProductMockMvc
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(product)))
+            .andExpect(status().isMethodNotAllowed());
+
+        // Validate the Product in the database
+        List<Product> productList = productRepository.findAll();
+        assertThat(productList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void partialUpdateProductWithPatch() throws Exception {
         // Initialize the database
-        productService.save(product);
+        productRepository.saveAndFlush(product);
+
+        int databaseSizeBeforeUpdate = productRepository.findAll().size();
+
+        // Update the product using partial update
+        Product partialUpdatedProduct = new Product();
+        partialUpdatedProduct.setId(product.getId());
+
+        partialUpdatedProduct.image(UPDATED_IMAGE).imageContentType(UPDATED_IMAGE_CONTENT_TYPE);
+
+        restProductMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedProduct.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedProduct))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the Product in the database
+        List<Product> productList = productRepository.findAll();
+        assertThat(productList).hasSize(databaseSizeBeforeUpdate);
+        Product testProduct = productList.get(productList.size() - 1);
+        assertThat(testProduct.getName()).isEqualTo(DEFAULT_NAME);
+        assertThat(testProduct.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
+        assertThat(testProduct.getPrice()).isEqualByComparingTo(DEFAULT_PRICE);
+        assertThat(testProduct.getSize()).isEqualTo(DEFAULT_SIZE);
+        assertThat(testProduct.getImage()).isEqualTo(UPDATED_IMAGE);
+        assertThat(testProduct.getImageContentType()).isEqualTo(UPDATED_IMAGE_CONTENT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void fullUpdateProductWithPatch() throws Exception {
+        // Initialize the database
+        productRepository.saveAndFlush(product);
+
+        int databaseSizeBeforeUpdate = productRepository.findAll().size();
+
+        // Update the product using partial update
+        Product partialUpdatedProduct = new Product();
+        partialUpdatedProduct.setId(product.getId());
+
+        partialUpdatedProduct
+            .name(UPDATED_NAME)
+            .description(UPDATED_DESCRIPTION)
+            .price(UPDATED_PRICE)
+            .size(UPDATED_SIZE)
+            .image(UPDATED_IMAGE)
+            .imageContentType(UPDATED_IMAGE_CONTENT_TYPE);
+
+        restProductMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedProduct.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedProduct))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the Product in the database
+        List<Product> productList = productRepository.findAll();
+        assertThat(productList).hasSize(databaseSizeBeforeUpdate);
+        Product testProduct = productList.get(productList.size() - 1);
+        assertThat(testProduct.getName()).isEqualTo(UPDATED_NAME);
+        assertThat(testProduct.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testProduct.getPrice()).isEqualByComparingTo(UPDATED_PRICE);
+        assertThat(testProduct.getSize()).isEqualTo(UPDATED_SIZE);
+        assertThat(testProduct.getImage()).isEqualTo(UPDATED_IMAGE);
+        assertThat(testProduct.getImageContentType()).isEqualTo(UPDATED_IMAGE_CONTENT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void patchNonExistingProduct() throws Exception {
+        int databaseSizeBeforeUpdate = productRepository.findAll().size();
+        product.setId(count.incrementAndGet());
+
+        // If the entity doesn't have an ID, it will throw BadRequestAlertException
+        restProductMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, product.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(product))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Product in the database
+        List<Product> productList = productRepository.findAll();
+        assertThat(productList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void patchWithIdMismatchProduct() throws Exception {
+        int databaseSizeBeforeUpdate = productRepository.findAll().size();
+        product.setId(count.incrementAndGet());
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restProductMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, count.incrementAndGet())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(product))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Product in the database
+        List<Product> productList = productRepository.findAll();
+        assertThat(productList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void patchWithMissingIdPathParamProduct() throws Exception {
+        int databaseSizeBeforeUpdate = productRepository.findAll().size();
+        product.setId(count.incrementAndGet());
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restProductMockMvc
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(product)))
+            .andExpect(status().isMethodNotAllowed());
+
+        // Validate the Product in the database
+        List<Product> productList = productRepository.findAll();
+        assertThat(productList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void deleteProduct() throws Exception {
+        // Initialize the database
+        productRepository.saveAndFlush(product);
 
         int databaseSizeBeforeDelete = productRepository.findAll().size();
 
         // Delete the product
-        restProductMockMvc.perform(delete("/api/products/{id}", product.getId())
-            .accept(TestUtil.APPLICATION_JSON_UTF8))
+        restProductMockMvc
+            .perform(delete(ENTITY_API_URL_ID, product.getId()).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

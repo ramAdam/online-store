@@ -1,34 +1,32 @@
 {
-    "name": "ProductCategory",
-    "fields": [
-        {
-            "fieldName": "name",
-            "fieldType": "String",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "description",
-            "fieldType": "String"
-        }
-    ],
-    "relationships": [
-        {
-            "relationshipType": "one-to-many",
-            "otherEntityName": "product",
-            "otherEntityRelationshipName": "productCategory",
-            "relationshipName": "product"
-        }
-    ],
-    "changelogDate": "20191227011754",
-    "entityTableName": "product_category",
-    "dto": "no",
-    "pagination": "no",
-    "service": "serviceClass",
-    "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "readOnly": false,
-    "clientRootFolder": "",
-    "applications": "*"
+  "applications": "*",
+  "changelogDate": "20191227011754",
+  "clientRootFolder": "",
+  "dto": "no",
+  "entityTableName": "product_category",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "ProductCategory",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "product",
+      "otherEntityRelationshipName": "productCategory",
+      "relationshipName": "product",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceClass"
 }

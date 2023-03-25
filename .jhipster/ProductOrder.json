@@ -1,58 +1,52 @@
 {
-    "name": "ProductOrder",
-    "fields": [
-        {
-            "fieldName": "placedDate",
-            "fieldType": "Instant",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "status",
-            "fieldType": "OrderStatus",
-            "fieldValues": "COMPLETED,PENDING,CANCELLED",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "code",
-            "fieldType": "String",
-            "fieldValidateRules": [
-                "required"
-            ]
-        }
-    ],
-    "relationships": [
-        {
-            "relationshipType": "one-to-many",
-            "otherEntityName": "orderItem",
-            "otherEntityRelationshipName": "order",
-            "relationshipName": "orderItem"
-        },
-        {
-            "relationshipType": "one-to-many",
-            "otherEntityName": "invoice",
-            "otherEntityRelationshipName": "order",
-            "relationshipName": "invoice"
-        },
-        {
-            "relationshipType": "many-to-one",
-            "otherEntityName": "customer",
-            "otherEntityRelationshipName": "order",
-            "relationshipName": "customer",
-            "otherEntityField": "email"
-        }
-    ],
-    "changelogDate": "20191227011756",
-    "entityTableName": "product_order",
-    "dto": "no",
-    "pagination": "pagination",
-    "service": "serviceClass",
-    "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "readOnly": false,
-    "clientRootFolder": "",
-    "applications": "*"
+  "applications": "*",
+  "changelogDate": "20191227011756",
+  "clientRootFolder": "",
+  "dto": "no",
+  "entityTableName": "product_order",
+  "fields": [
+    {
+      "fieldName": "placedDate",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "OrderStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "COMPLETED,PENDING,CANCELLED"
+    },
+    {
+      "fieldName": "code",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "ProductOrder",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "orderItem",
+      "otherEntityRelationshipName": "order",
+      "relationshipName": "orderItem",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "invoice",
+      "otherEntityRelationshipName": "order",
+      "relationshipName": "invoice",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityField": "email",
+      "otherEntityName": "customer",
+      "otherEntityRelationshipName": "order",
+      "relationshipName": "customer",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceClass"
 }

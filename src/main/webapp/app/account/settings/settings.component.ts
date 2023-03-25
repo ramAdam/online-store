@@ -1,91 +1,64 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { JhiLanguageService } from 'ng-jhipster';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { TranslateService } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
-import { Account } from 'app/core/user/account.model';
-import { JhiLanguageHelper } from 'app/core/language/language.helper';
+import { Account } from 'app/core/auth/account.model';
+import { LANGUAGES } from 'app/config/language.constants';
+
+const initialAccount: Account = {} as Account;
 
 @Component({
   selector: 'jhi-settings',
-  templateUrl: './settings.component.html'
+  templateUrl: './settings.component.html',
 })
 export class SettingsComponent implements OnInit {
-  error: string;
-  success: string;
-  languages: any[];
-  settingsForm = this.fb.group({
-    firstName: [undefined, [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
-    lastName: [undefined, [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
-    email: [undefined, [Validators.required, Validators.minLength(5), Validators.maxLength(254), Validators.email]],
-    activated: [false],
-    authorities: [[]],
-    langKey: ['en'],
-    login: [],
-    imageUrl: []
+  success = false;
+  languages = LANGUAGES;
+
+  settingsForm = new FormGroup({
+    firstName: new FormControl(initialAccount.firstName, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(1), Validators.maxLength(50)],
+    }),
+    lastName: new FormControl(initialAccount.lastName, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(1), Validators.maxLength(50)],
+    }),
+    email: new FormControl(initialAccount.email, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(5), Validators.maxLength(254), Validators.email],
+    }),
+    langKey: new FormControl(initialAccount.langKey, { nonNullable: true }),
+
+    activated: new FormControl(initialAccount.activated, { nonNullable: true }),
+    authorities: new FormControl(initialAccount.authorities, { nonNullable: true }),
+    imageUrl: new FormControl(initialAccount.imageUrl, { nonNullable: true }),
+    login: new FormControl(initialAccount.login, { nonNullable: true }),
   });
 
-  constructor(
-    private accountService: AccountService,
-    private fb: FormBuilder,
-    private languageService: JhiLanguageService,
-    private languageHelper: JhiLanguageHelper
-  ) {}
+  constructor(private accountService: AccountService, private translateService: TranslateService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.accountService.identity().subscribe(account => {
-      this.updateForm(account);
-    });
-    this.languages = this.languageHelper.getAll();
-  }
-
-  save() {
-    const settingsAccount = this.accountFromForm();
-    this.accountService.save(settingsAccount).subscribe(
-      () => {
-        this.error = null;
-        this.success = 'OK';
-        this.accountService.identity(true).subscribe(account => {
-          this.updateForm(account);
-        });
-        this.languageService.getCurrent().then(current => {
-          if (settingsAccount.langKey !== current) {
-            this.languageService.changeLanguage(settingsAccount.langKey);
-          }
-        });
-      },
-      () => {
-        this.success = null;
-        this.error = 'ERROR';
+      if (account) {
+        this.settingsForm.patchValue(account);
       }
-    );
+    });
   }
 
-  private accountFromForm(): any {
-    const account = {};
-    return {
-      ...account,
-      firstName: this.settingsForm.get('firstName').value,
-      lastName: this.settingsForm.get('lastName').value,
-      email: this.settingsForm.get('email').value,
-      activated: this.settingsForm.get('activated').value,
-      authorities: this.settingsForm.get('authorities').value,
-      langKey: this.settingsForm.get('langKey').value,
-      login: this.settingsForm.get('login').value,
-      imageUrl: this.settingsForm.get('imageUrl').value
-    };
-  }
+  save(): void {
+    this.success = false;
 
-  updateForm(account: Account): void {
-    this.settingsForm.patchValue({
-      firstName: account.firstName,
-      lastName: account.lastName,
-      email: account.email,
-      activated: account.activated,
-      authorities: account.authorities,
-      langKey: account.langKey,
-      login: account.login,
-      imageUrl: account.imageUrl
+    const account = this.settingsForm.getRawValue();
+    this.accountService.save(account).subscribe(() => {
+      this.success = true;
+
+      this.accountService.authenticate(account);
+
+      if (account.langKey !== this.translateService.currentLang) {
+        this.translateService.use(account.langKey);
+      }
     });
   }
 }
