@@ -1,0 +1,11 @@
+id;date;details;status;payment_method;payment_date;payment_amount;code
+1;2023-03-25T04:56:38;Oklahoma communities;ISSUED;PAYPAL;2023-03-25T20:46:29;82279;input Naira
+2;2023-03-25T17:53:43;seize Glen Refined;PAID;PAYPAL;2023-03-25T01:32:12;7379;Paraguay
+3;2023-03-25T00:19:56;Central African Republic;CANCELLED;PAYPAL;2023-03-25T22:30:17;91525;Usability
+4;2023-03-25T22:12:24;brand Generic B2B;ISSUED;CREDIT_CARD;2023-03-25T14:56:50;97439;Architect
+5;2023-03-25T06:50:23;Falkland Islands (Malvinas);ISSUED;PAYPAL;2023-03-25T00:48:01;41663;New Mexico District Unbranded
+6;2023-03-25T02:33:20;Aruba Chair portals;ISSUED;PAYPAL;2023-03-25T22:04:16;46869;infrastructures
+7;2023-03-25T17:02:01;Ergonomic Fresh Chicken;ISSUED;CREDIT_CARD;2023-03-25T12:46:57;20504;User-friendly
+8;2023-03-25T17:00:07;white SMTP;CANCELLED;CASH_ON_DELIVERY;2023-03-25T16:12:31;85218;Vietnam California PNG
+9;2023-03-25T13:54:43;Granite Grocery;CANCELLED;PAYPAL;2023-03-25T15:10:53;60808;withdrawal Jamaica
+10;2023-03-25T21:24:41;array Luxembourg Spurs;CANCELLED;CREDIT_CARD;2023-03-25T22:00:20;45913;Orchestrator
