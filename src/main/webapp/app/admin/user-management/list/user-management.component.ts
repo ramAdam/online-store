@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { HttpResponse, HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
@@ -31,7 +31,8 @@ export class UserManagementComponent implements OnInit {
     private accountService: AccountService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -76,12 +77,14 @@ export class UserManagementComponent implements OnInit {
   }
 
   transition(): void {
-    this.router.navigate(['./'], {
-      relativeTo: this.activatedRoute.parent,
-      queryParams: {
-        page: this.page,
-        sort: `${this.predicate},${this.ascending ? ASC : DESC}`,
-      },
+    this.ngZone.run(() => {
+      this.router.navigate(['./'], {
+        relativeTo: this.activatedRoute.parent,
+        queryParams: {
+          page: this.page,
+          sort: `${this.predicate},${this.ascending ? ASC : DESC}`,
+        },
+      });
     });
   }
 
